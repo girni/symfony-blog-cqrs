@@ -1,0 +1,69 @@
+# This file is the entry point to configure your own services.
+# Files in the packages/ subdirectory configure your dependencies.
+
+# Put parameters here that don't need to change on each machine where the app is deployed
+# https://symfony.com/doc/current/best_practices/configuration.html#application-related-configuration
+parameters:
+  post_images_directory: '%kernel.project_dir%/public/uploads/posts'
+
+services:
+  # default configuration for services in *this* file
+  _defaults:
+    autowire: false      # Automatically injects dependencies in your services.
+    autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+    public: true
+
+  #    App\:
+  #        resource: '../src/*'
+  #        exclude: '../src/{DependencyInjection,Entity,Tests,Kernel.php}'
+
+  html_tag_stripper:
+    class: App\Blog\Application\HtmlTagStripper
+
+  post_image_file_uploader:
+    class: App\Blog\Infrastructure\PostImageFileUploader
+    arguments:
+      $directory: '%post_images_directory%'
+
+  post_repository:
+    class: App\Blog\Infrastructure\DoctrineOrmPostRepository
+    arguments: [ '@doctrine.orm.entity_manager' ]
+
+  command_bus:
+    class: App\Shared\Infrastructure\InMemoryCommandBus
+    arguments: [ ]
+    calls:
+      - [ 'map', [ 'App\Blog\Application\CreatePostCommand', '@create_post_handler' ] ]
+
+  create_post_handler:
+    class: App\Blog\Application\CreatePostHandler
+    arguments: [ '@post_repository', '@post_image_file_uploader', '@html_tag_stripper' ]
+
+  dbal_post_query:
+    class: App\Blog\Infrastructure\DbalPostQuery
+    arguments: [ '@doctrine.dbal.default_connection' ]
+
+  App\Blog\Infrastructure\Symfony\Controller\Web\BlogController:
+    arguments: [ '@command_bus' ]
+    public: true
+    calls:
+      - [ setContainer, [ '@service_container' ] ]
+
+  App\Blog\Infrastructure\Symfony\Controller\Api\BlogController:
+    arguments: [ '@command_bus', '@dbal_post_query', '@assets.packages' ]
+    public: true
+    tags: [ 'controller.service_arguments' ]
+    calls:
+      - [ setContainer, [ '@service_container' ] ]
+
+  api_exception_subscriber:
+    class: App\Blog\Infrastructure\Symfony\EventListener\ApiExceptionSubscriber
+    arguments: []
+    tags:
+      - { name: kernel.event_subscriber }
+
+  cmd_create_blog:
+    class: App\Blog\Infrastructure\Symfony\Console\CreatePostCommand
+    arguments: [ '@command_bus' ]
+    tags: [ console.command ]
+    public: true

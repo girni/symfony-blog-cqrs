@@ -1,0 +1,10 @@
+version: "3.5"
+
+volumes:
+  bcsgo-sync:
+    external: true
+
+services:
+  phpfpm:
+    volumes:
+      - blogtest_app-sync:/var/www/html:nocopy

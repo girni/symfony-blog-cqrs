@@ -1,0 +1,7 @@
+App\Blog\Domain\Content:
+  type: embeddable
+  fields:
+    content:
+      type: text
+      unique: true
+      nullable: false

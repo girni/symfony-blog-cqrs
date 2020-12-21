@@ -1,0 +1,52 @@
+version: '3.5'
+services:
+  nginx:
+    container_name: blogtest_nginx
+    image: nginx:latest
+    ports:
+      - "8080:80"
+      - "8180:443"
+    volumes:
+      - ./:/var/www/html
+      - ./docker/conf/:/etc/nginx/conf.d/
+      - ./docker/www_logs/nginx:/var/log/nginx
+    links:
+      - phpfpm
+  phpfpm:
+    ports:
+      - "6001:6001"
+    container_name: blogtest_app
+    build: docker/containers/php74-fpm
+    command: bash -c "/etc/init.d/cron start && php-fpm -F"
+    volumes:
+      - ./:/var/www/html:cached
+      - ./docker/php-custom.ini:/usr/local/etc/php/conf.d/php-custom.ini
+  mysql:
+    container_name: blogtest_mysql
+    image: mariadb:latest
+    volumes:
+      - ./docker/conf/mysql:/etc/mysql/conf.d
+      - ./docker/mysql-data:/var/lib/mysql
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_USERNAME: root
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: database
+  phpmyadmin:
+    container_name: blogtest_phpmyadmin
+    image: phpmyadmin/phpmyadmin
+    depends_on:
+      - mysql
+    ports:
+      - '8079:80'
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USERNAME: root
+      PMA_HOST: mysql
+  mailhog:
+    container_name: blogtest_mailhog
+    image: mailhog/mailhog:latest
+    ports:
+      - 8025:8025
+      - 1025:1025

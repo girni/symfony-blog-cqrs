@@ -1,0 +1,18 @@
+App\Blog\Domain\Post:
+  type: entity
+  table: posts
+  fields: ~
+  # no fields
+  embedded:
+    id:
+      class: App\Blog\Domain\PostId
+      columnPrefix: false
+    title:
+      class: App\Blog\Domain\Title
+      columnPrefix: false
+    content:
+      class: App\Blog\Domain\Content
+      columnPrefix: false
+    image:
+      class: App\Blog\Domain\Image
+      columnPrefix: false

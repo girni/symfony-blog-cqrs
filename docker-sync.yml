@@ -1,0 +1,11 @@
+version: "2"
+
+options:
+  max-attempt: 30
+
+syncs:
+  blogtest_app-sync:
+    src: './'
+    sync_excludes: ['.*/.git', '.*/node_modules', '.idea', '.docker-sync', '.*/vendor', '.git']
+    sync_userid: 501
+    sync_groupid: 20

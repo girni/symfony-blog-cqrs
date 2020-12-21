@@ -1,0 +1,8 @@
+App\Blog\Domain\Image:
+  type: embeddable
+  fields:
+    image:
+      type: string
+      length: 255
+      unique: true
+      nullable: false

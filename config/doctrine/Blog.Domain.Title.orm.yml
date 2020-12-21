@@ -1,0 +1,8 @@
+App\Blog\Domain\Title:
+  type: embeddable
+  fields:
+    title:
+      type: string
+      length: 80
+      unique: true
+      nullable: false
